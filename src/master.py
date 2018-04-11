@@ -64,7 +64,9 @@ class MasterService(rpyc.Service):
             print(minion_state[0])
 
         def exposed_get_minion_ports(self,minion_ports):
-            self.minion_ports=minion_ports
+            for minion_port in minion_ports:
+                self.minion_ports.append(minion_port)
+            # print (self.minion_ports)
 
 
         # returns live nodes and dead nodes

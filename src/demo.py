@@ -104,10 +104,13 @@ class WebServices:
         time.sleep(1)
 
     def minion_report(self):
-        self.con = rpyc.connect('localhost', self.proxy_port)
-        self.proxy = self.con.root.Proxy()
-        self.master = self.proxy.get_master()
-        self.master.minion_report()
+        con = rpyc.connect('localhost', self.proxy_port)
+        proxy = con.root.Proxy()
+
+        master_port = proxy.get_master()
+        con = rpyc.connect("127.0.0.1", port=master_port)
+        master = con.root.Master()
+        master.minion_report()
 
 
 class demo:
@@ -121,6 +124,7 @@ class demo:
     #  Features tested:
     #       Client: Put, Get, Delete
     def test1(self):
+        # Known bug. Race condition
         self.webservice.start_all_services()
         print("Test 1 running.............")
         client_service = client(self.webservice.proxy_port)
@@ -261,9 +265,6 @@ class demo:
         self.webservice.cleanup()
         os.remove(path1)
 
-
-
-
     # Test 5: master down (proxy to master fault)
     #  Steps:
     #     1. when the main master is down, the backup master should take over
@@ -292,12 +293,15 @@ class demo:
         self.webservice.cleanup()
         os.remove(path)
 
+
+
     def run_all_tests(self):
         self.test1()
         self.test2()
         self.test3()
         self.test4()
-        self.test5()
+
+        # self.test5()
 
         # self.test6()
 

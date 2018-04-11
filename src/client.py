@@ -13,7 +13,10 @@ class client:
     # Client public API : get, put, delete
     def get(self, key):
 
-        master = self.proxy.get_master()
+        master_port = self.proxy.get_master()
+        con = rpyc.connect("127.0.0.1", port=master_port)
+        master = con.root.Master()
+
         minion_ports = master.get_minion_that_has_the_key(key)
 
         # get value from each
@@ -26,7 +29,11 @@ class client:
 
     def put(self, source, key):
         # get allocation scheme from master through proxy
-        master = self.proxy.get_master()
+
+        master_port = self.proxy.get_master()
+        con = rpyc.connect("127.0.0.1", port=master_port)
+        master = con.root.Master()
+
         minion_ports = master.get_allocation_scheme()
 
         with open(source) as f:
@@ -36,7 +43,9 @@ class client:
 
     def delete(self, key):
         # delete race condition
-        master = self.proxy.get_master()
+        master_port = self.proxy.get_master()
+        con = rpyc.connect("127.0.0.1", port=master_port)
+        master = con.root.Master()
         master.delete_key(key)
 
 
