@@ -69,7 +69,9 @@ class WebServices:
     def kill_main_master(self):
         con = rpyc.connect('localhost', self.proxy_port)
         proxy = con.root.Proxy()
-        master = proxy.get_master()
+        master_port = proxy.get_master()
+        con = rpyc.connect("127.0.0.1", port=master_port)
+        master = con.root.Master()
         master_pid= master.get_master_PID()
         os.kill(master_pid, signal.SIGTERM)
 
@@ -148,12 +150,10 @@ class demo:
 
         # upload 3 files. file 3 should overwrite file 2
         client_service.put(path1, namespace1)
-        time.sleep(1)
         client_service.put(path2, namespace2)
-        time.sleep(1)
+        time.sleep(3)
         client_service.put(path3, namespace2)
-        time.sleep(1)
-
+        time.sleep(2)
         # let server save the changes
 
         #
@@ -162,7 +162,11 @@ class demo:
         result2 = client_service.get(namespace2)
 
         assert result1 == text1, "Get or put not working! File content not same"
-        print (result2)
+
+        # Sometime it goes off and it is reasonable
+        # If one makes a put,
+        # before server finishes updating, the user makes another put,
+        # system would return the old value
         assert result2 == text3, "Same namespace file not overridden"
 
         client_service.delete(namespace2)
@@ -300,8 +304,7 @@ class demo:
         self.test2()
         self.test3()
         self.test4()
-
-        # self.test5()
+        self.test5()
 
         # self.test6()
 
