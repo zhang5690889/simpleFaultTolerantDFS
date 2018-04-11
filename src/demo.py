@@ -1,8 +1,8 @@
 import os
 import random
+import signal
 import socket
 import time
-import signal
 from multiprocessing import Process
 
 import rpyc
@@ -75,6 +75,7 @@ class WebServices:
         master_pid= master.get_master_PID()
         os.kill(master_pid, signal.SIGTERM)
 
+        time.sleep(2)
 
 
 
@@ -120,6 +121,25 @@ class demo:
         self.webservice = WebServices \
             (default_minion_ports, default_master_ports, default_proxy_port)
 
+
+    # Race condition is possible.
+    # If user makes a request too fast, the later request would get outdated value
+    def testNameSpaceOverwrite(self,expectedResult, namespace, client_service, counter,path):
+
+        try:
+            client_service.put(path, namespace)
+            result2 = client_service.get(namespace)
+            assert result2 == expectedResult, "Same namespace file not overridden."
+        except AssertionError:
+            if counter>10:
+                raise
+            else:
+                time.sleep(2)
+                print ('Request too fast. System has not been updated. Retrying!')
+                counter+=1
+                self.testNameSpaceOverwrite(expectedResult, namespace, client_service, counter,path)
+
+
     # Test cases #
 
     # Test 1: basic DFS functionality
@@ -151,23 +171,15 @@ class demo:
         # upload 3 files. file 3 should overwrite file 2
         client_service.put(path1, namespace1)
         client_service.put(path2, namespace2)
-        time.sleep(3)
-        client_service.put(path3, namespace2)
-        time.sleep(2)
-        # let server save the changes
 
         #
         # # Get 3 files
         result1 = client_service.get(namespace1)
-        result2 = client_service.get(namespace2)
-
         assert result1 == text1, "Get or put not working! File content not same"
 
-        # Sometime it goes off and it is reasonable
-        # If one makes a put,
-        # before server finishes updating, the user makes another put,
-        # system would return the old value
-        assert result2 == text3, "Same namespace file not overridden"
+
+        self.testNameSpaceOverwrite(text3, namespace2, client_service, 0, path3)
+
 
         client_service.delete(namespace2)
         # save some time to let the server save the changes
@@ -296,8 +308,6 @@ class demo:
         print("[Test 5 passed]: Main master down! Get and put continue to work!")
         self.webservice.cleanup()
         os.remove(path)
-
-
 
     def run_all_tests(self):
         self.test1()
