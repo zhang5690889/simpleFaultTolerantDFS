@@ -65,16 +65,15 @@ class WebServices:
         for minion_port in self.minion_ports:
             self.activate_minion(minion_port)
 
+        # master only know master port
         for master_port in self.master_ports:
             self.activate_master(master_port)
 
         # start proxy
-        # proxy should know master ports
+        # proxy should all ports
         self.activate_proxy(self.proxy_port, self.minion_ports, self.master_ports)
 
-        # start master
-        # master should know all minion ports
-
+        # give 3 seconds to start all processes
         time.sleep(3)
 
     def kill_main_master(self):
