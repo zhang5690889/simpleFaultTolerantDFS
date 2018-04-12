@@ -16,6 +16,7 @@ class MasterService(rpyc.Service):
         minion_ports = []
         replication_factor = 0
 
+        # tell how to allocation resources
         def exposed_get_allocation_scheme(self):
             live_nodes = self.get_minion_state()[0]
             assert len(live_nodes)>=replication_factor, "live nodes less than replication factor"
@@ -24,11 +25,11 @@ class MasterService(rpyc.Service):
             ports = random.sample(live_nodes, replication_factor)
             return ports
 
+        # get a list of minion how has key
         def exposed_get_minion_that_has_the_key(self, key):
 
-            #     ask all minion who has the key
+            # ask all minion who has the key
             minions_who_have_the_key = []
-
             for minion_port in self.minion_ports:
                 try:
                     con = rpyc.connect("127.0.0.1", port=minion_port)
@@ -37,8 +38,6 @@ class MasterService(rpyc.Service):
                         minions_who_have_the_key.append(minion_port)
                 except Exception:
                     continue
-
-            # TODO:    k way replication fix. Keeps a counter
             return minions_who_have_the_key
 
 
@@ -46,6 +45,7 @@ class MasterService(rpyc.Service):
         def exposed_get_master_PID(self):
             return os.getpid()
 
+        # delete a key from minion
         def exposed_delete_key(self, key):
 
             # notify all minions. If you have this key, delete it
@@ -54,7 +54,7 @@ class MasterService(rpyc.Service):
                 minion = con.root.Minion()
                 minion.delete_key(key)
 
-
+        # file status of each minion
         def exposed_get_file_status_report(self):
             all_mapping = []
             # broadcast to get key value
@@ -69,6 +69,7 @@ class MasterService(rpyc.Service):
                     continue
             return all_mapping
 
+        # fix k way replication property
         def exposed_fix_k_way_replication(self):
 
             all_mapping = self.exposed_get_file_status_report()
@@ -82,7 +83,7 @@ class MasterService(rpyc.Service):
 
 
 
-        # This method shows how many minion down
+        # This method shows how many minion are live and down
         def exposed_minion_status_report(self):
             minion_state=self.get_minion_state()
 
@@ -93,7 +94,8 @@ class MasterService(rpyc.Service):
             if len(minion_state[0])<= self.replication_factor:
                 print ("The system is in danger! Make sure you have more live nodes. k = num of live nodes")
 
-        def exposed_get_minion_ports(self,minion_ports):
+        # get
+        def exposed_set_minion_ports(self, minion_ports):
             # minior bug. Dirty fix
             self.minion_ports.clear()
             for minion_port in minion_ports:

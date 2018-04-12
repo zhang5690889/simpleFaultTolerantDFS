@@ -384,12 +384,12 @@ class demo:
 
 
     def run_all_tests(self):
-        # while 1:
-        #     self.test1()
-        #     self.test2()
-        #     self.test3()
-        #     self.test4()
-        #     self.test5()
+        while 1:
+            self.test1()
+            self.test2()
+            self.test3()
+            self.test4()
+            self.test5()
             self.test6()
 
 

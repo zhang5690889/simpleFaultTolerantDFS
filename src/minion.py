@@ -14,6 +14,7 @@ class MinionService(rpyc.Service):
         storage_path = ''
 
         def __init__(self):
+            # each minion gets its own folder
             self.storage_path = "/tmp/minion/" + str(self.minionport) + "/"
 
         # save data by key
@@ -39,20 +40,20 @@ class MinionService(rpyc.Service):
             if os.path.exists(self.storage_path + key):
                 os.remove(self.storage_path + key)
 
+        # return all the keys this minion store
         def exposed_get_all_keys(self):
             # return all file (key) in the storage
             all_keys=os.listdir(self.storage_path)
             return all_keys
 
 
-
 def set_conf(minionport):
+    # minion should show its port
     minion = MinionService.exposed_Minion
     minion.minionport = minionport
 
-    # create dir
+    # create clean dir
     file_path= "/tmp/minion/" + str(minionport) + "/"
-
     if os.path.exists(file_path):
         shutil.rmtree(file_path)
     os.makedirs(file_path)
