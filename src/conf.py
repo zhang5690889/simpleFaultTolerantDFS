@@ -7,7 +7,7 @@
 replication_factor = 3
 
 # Default values for starting all services
-default_minion_ports = [8898, 8890, 8891, 5534, 5553, 5558]
+default_minion_ports = [8898, 8890, 8891, 5534, 5553]
 default_master_ports = [2131, 2121]
 
 

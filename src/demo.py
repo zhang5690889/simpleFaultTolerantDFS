@@ -55,9 +55,9 @@ class WebServices:
         con = rpyc.connect("127.0.0.1", port=master_port)
         master = con.root.Master()
 
-        file_report = master.get_file_status_report()
-
-
+        result = list(master.get_file_status_report())
+        print ("File mapping status:")
+        print (result)
 
 
 
@@ -77,7 +77,6 @@ class WebServices:
         # start master
         # master should know all minion ports
 
-
         time.sleep(3)
 
     def kill_main_master(self):
@@ -92,6 +91,13 @@ class WebServices:
         time.sleep(2)
 
 
+    def fix_k_way_replication(self):
+        con = rpyc.connect('localhost', self.proxy_port)
+        proxy = con.root.Proxy()
+        master_port = proxy.get_master()
+        con = rpyc.connect("127.0.0.1", port=master_port)
+        master = con.root.Master()
+        master.fix_k_way_replication()
 
 
     def cleanup(self):
@@ -193,9 +199,7 @@ class demo:
         result1 = client_service.get(namespace1)
         assert result1 == text1, "Get or put not working! File content not same"
 
-
         self.testNameSpaceOverwrite(text3, namespace2, client_service, 0, path3)
-
 
         client_service.delete(namespace2)
         # save some time to let the server save the changes
@@ -328,8 +332,9 @@ class demo:
 
     # Test 6: minion k way replication fix
     # Precondition:
-    # When admin decides to fix k way replication, system has to be in a steady state.
-    # A file has been uploaded
+    # 1. When admin decides to fix k way replication, system has to be in a steady state.
+    #    Otherwise replicate could face a racing condition
+    # 2. A file has been uploaded
     # Steps:
     #  1. kill k - 1 minions
     #  2. show report
@@ -359,9 +364,17 @@ class demo:
 
         # Randomly kill k - 1 nodes
         self.webservice.kill_random_minions(replication_factor - 1)
+
+        # show minion status
         self.webservice.minion_status_report()
 
-        # show minion replication report
+        # show show report report
+        self.webservice.file_status_report()
+
+        # show show report report
+        self.webservice.fix_k_way_replication()
+
+        # show show report report
         self.webservice.file_status_report()
 
         os.remove(path2)
@@ -371,12 +384,12 @@ class demo:
 
 
     def run_all_tests(self):
-        while 1:
-            self.test1()
-            self.test2()
-            self.test3()
-            self.test4()
-            self.test5()
+        # while 1:
+        #     self.test1()
+        #     self.test2()
+        #     self.test3()
+        #     self.test4()
+        #     self.test5()
             self.test6()
 
 
