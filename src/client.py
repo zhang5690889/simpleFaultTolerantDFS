@@ -1,6 +1,5 @@
 import rpyc
 
-
 class client:
     # client needs to know proxy's port
     def __init__(self, proxy_port_num):
@@ -38,8 +37,6 @@ class client:
             with open(source) as f:
                 data = f.read()
                 return self.send_to_minion(minion_ports, data, key)
-
-
         # Upon any possible exception, retry
         except Exception:
             # if client cannot connect to master, just keep retrying
@@ -53,7 +50,6 @@ class client:
         master.delete_key(key)
 
     # Internal APIs
-
     # send data to minion based on allocation scheme
     def send_to_minion(self, minion_ports, data, key):
         # note the order. Interesting behavior

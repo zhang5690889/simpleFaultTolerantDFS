@@ -16,6 +16,7 @@ from master import startMasterService
 from minion import startMinionService
 from proxy import startProxyService
 from utils import generate_file
+from utils import removefiles
 
 
 # This class exposes API for controlling all nodes
@@ -160,7 +161,6 @@ class demo:
     #  Features tested:
     #       Client: Put, Get, Delete
     def test1(self):
-        # Known bug. Race condition
         print("Test 1 running.............")
         self.webservice.start_all_services()
         client_service = client(self.webservice.proxy_port)
@@ -194,7 +194,6 @@ class demo:
         self.testNameSpaceOverwrite(text3, namespace2, client_service, 0, path3)
 
         client_service.delete(namespace2)
-        # save some time to let the server save the changes
 
         result2 = client_service.get(namespace2)
         assert result2 == "", "Delete not working"
@@ -205,9 +204,8 @@ class demo:
         print("[Test 1 passed]. Basic client put, get, delete working!")
 
         # remove generated file
-        os.remove(path1)
-        os.remove(path2)
-        os.remove(path3)
+        removefiles([path1, path2, path3])
+
         self.webservice.cleanup()
 
     # Test 2: k way replication validation (backup fault tolerant)
@@ -241,7 +239,7 @@ class demo:
         assert text == retrieved_data, ("Data corrupted!")
 
         print("[Test 2 passed] k - 1 minion offline successful!")
-        os.remove(path)
+        removefiles([path])
         self.webservice.cleanup()
 
     # Test 3: client to minion fail tell user
@@ -288,8 +286,9 @@ class demo:
         assert result1 == text1, "Get or put not working after killing some minions"
 
         print("[Test 4 passed] After killing some minions, put and get continue to work!")
+
+        removefiles([path1])
         self.webservice.cleanup()
-        os.remove(path1)
 
     # Test 5: master down (proxy to master fault)
     #  Steps:
@@ -317,8 +316,8 @@ class demo:
         assert result == text, "Get or put not working after killing main master"
 
         print("[Test 5 passed]: Main master down! Get and put continue to work!")
+        removefiles([path])
         self.webservice.cleanup()
-        os.remove(path)
 
     # Test 6: minion k way replication fix
     # Precondition:
@@ -368,9 +367,7 @@ class demo:
         # show show report report
         self.webservice.file_status_report()
 
-        os.remove(path2)
-        os.remove(path1)
-
+        removefiles([path1, path2])
         self.webservice.cleanup()
 
     def run_all_tests(self):
@@ -381,9 +378,6 @@ class demo:
             self.test4()
             self.test5()
             self.test6()
-
-
-###############################
 
 if __name__ == "__main__":
     demo_obj = None

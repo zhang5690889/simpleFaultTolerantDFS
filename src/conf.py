@@ -1,6 +1,3 @@
-# This file contains all default configuration for all components to read from
-# Note: this is the single source of truth about the whole system.
-
 # Make sure you kill k - 1 nodes. there are still at least k nodes live. otherwise it will below up
 
 # Master server configuration

@@ -18,16 +18,26 @@ class MasterService(rpyc.Service):
         minion_ports = []
         replication_factor = 0
 
+        # Public API:
+        # get allocation scheme,
+        # get minion ports given key,
+        # get current pid,
+        # delete key,
+        # k way replication fix,
+        # minion report,
+        # set minion ports
+
         # tell how to allocation resources
         def exposed_get_allocation_scheme(self):
             live_nodes = self.get_minion_state()[0]
             assert len(live_nodes) >= replication_factor, "live nodes less than replication factor"
 
-            # randomly choose 2 elements
+            # randomly choose k elements
+            # can be improved based on workload and network traffic
             ports = random.sample(live_nodes, replication_factor)
             return ports
 
-        # get a list of minion how has key
+        # get a list of minion who has the given key
         def exposed_get_minion_that_has_the_key(self, key):
 
             # ask all minion who has the key

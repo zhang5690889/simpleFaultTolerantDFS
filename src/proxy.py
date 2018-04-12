@@ -11,6 +11,8 @@ class ProxyService(rpyc.Service):
         master_ports = []
         minion_ports = []
 
+        # Proxy API: get a available master
+
         # try the current master. If down, get a new master
         def exposed_get_master(self):
             if self.main_master_port is 0:
@@ -24,7 +26,7 @@ class ProxyService(rpyc.Service):
                     print("[Proxy]:Master down! Use another master!")
                     return self.set_main_master()
 
-        # set a new master as main master
+        # set a new master as main master. Tell the master minion ports
         def set_main_master(self):
             for master_port in self.master_ports:
                 try:

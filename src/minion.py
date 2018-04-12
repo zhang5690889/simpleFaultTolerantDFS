@@ -17,6 +17,14 @@ class MinionService(rpyc.Service):
             # each minion gets its own folder
             self.storage_path = "/tmp/minion/" + str(self.minionport) + "/"
 
+        # Minion Public API:
+        # save,
+        # get data by key,
+        # has key,
+        # delete key,
+        # get all keys,
+        # send to other minion
+
         # save data by key
         def exposed_save(self, data, key):
             # check existing content and remove
