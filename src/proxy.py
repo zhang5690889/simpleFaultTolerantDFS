@@ -27,10 +27,11 @@ class ProxyService(rpyc.Service):
                 try:
                     con = rpyc.connect("127.0.0.1", port=master_port)
                     master = con.root.Master()
+
+                    # set all the ports
                     master.get_minion_ports(self.minion_ports)
                     self.main_master_port = master_port
 
-                    time.sleep(1)
                     return self.main_master_port
                 except ConnectionRefusedError:
                     # dead master. Just continue

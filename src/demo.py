@@ -289,7 +289,7 @@ class demo:
         generate_file(path1, text1)
         client_service.put(path1,namespace1)
         result1 = client_service.get(namespace1)
-        #
+
         assert result1 == text1, "Get or put not working after killing some minions"
 
         print("[Test 4 passed] After killing some minions, put and get continue to work!")
@@ -371,13 +371,13 @@ class demo:
 
 
     def run_all_tests(self):
-        self.test1()
-        self.test2()
-        self.test3()
-        self.test4()
-        self.test5()
-
-        self.test6()
+        while 1:
+            self.test1()
+            self.test2()
+            self.test3()
+            self.test4()
+            self.test5()
+            self.test6()
 
 
 ###############################

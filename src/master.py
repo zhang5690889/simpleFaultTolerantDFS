@@ -90,7 +90,7 @@ class MasterService(rpyc.Service):
             self.minion_ports.clear()
             for minion_port in minion_ports:
                 self.minion_ports.append(minion_port)
-            # print (self.minion_ports)
+
 
 
         # returns live nodes and dead nodes
