@@ -47,6 +47,20 @@ class WebServices:
         self.master_process_ref.append(p)
 
 
+    def file_status_report(self):
+        # connect to master
+        con = rpyc.connect('localhost', self.proxy_port)
+        proxy = con.root.Proxy()
+        master_port = proxy.get_master()
+        con = rpyc.connect("127.0.0.1", port=master_port)
+        master = con.root.Master()
+
+        file_report = master.get_file_status_report()
+
+
+
+
+
     def start_all_services(self):
 
         # minion only knows minion port
@@ -91,6 +105,8 @@ class WebServices:
         self.minion_process_ref = []
         self.master_process_ref = []
         self.proxy_process_ref = None
+
+
         time.sleep(3)
 
     # kill k - 1 nodes
@@ -106,14 +122,14 @@ class WebServices:
 
         time.sleep(1)
 
-    def minion_report(self):
+    # This report contains minion cluster status: whether live or down
+    def minion_status_report(self):
         con = rpyc.connect('localhost', self.proxy_port)
         proxy = con.root.Proxy()
-
         master_port = proxy.get_master()
         con = rpyc.connect("127.0.0.1", port=master_port)
         master = con.root.Master()
-        master.minion_report()
+        master.minion_status_report()
 
 
 class demo:
@@ -147,8 +163,8 @@ class demo:
     #       Client: Put, Get, Delete
     def test1(self):
         # Known bug. Race condition
-        self.webservice.start_all_services()
         print("Test 1 running.............")
+        self.webservice.start_all_services()
         client_service = client(self.webservice.proxy_port)
 
         # Initialize 3 files
@@ -196,7 +212,6 @@ class demo:
         os.remove(path1)
         os.remove(path2)
         os.remove(path3)
-
         self.webservice.cleanup()
 
     # Test 2: k way replication validation (backup fault tolerant)
@@ -206,8 +221,8 @@ class demo:
     #     2. User retrieves the previously uploaded file
     #     3. User can still get the whole file back
     def test2(self):
-        self.webservice.start_all_services()
         print("Test 2 running.............")
+        self.webservice.start_all_services()
 
         # Precondition
         client_service = client(self.webservice.proxy_port)
@@ -240,8 +255,8 @@ class demo:
     #     2. The minion goes offline
     #     3. The client should request for new allocation scheme
     def test3(self):
-        self.webservice.start_all_services()
         print("Test 3 running.............")
+        self.webservice.start_all_services()
         client_service = client(self.webservice.proxy_port)
 
         # Try to connect to a non existing minion
@@ -259,12 +274,12 @@ class demo:
     #  Steps:
     #     1. upon put and get, master know there are some dead minions
     def test4(self):
-        self.webservice.start_all_services()
         print("Test 4 running.............")
+        self.webservice.start_all_services()
 
         # Randomly kill k - 1 nodes
         self.webservice.kill_random_minions(replication_factor - 1)
-        self.webservice.minion_report()
+        self.webservice.minion_status_report()
 
         path1 = './test1.txt'
         text1 = "this is test1"
@@ -284,9 +299,10 @@ class demo:
     # Test 5: master down (proxy to master fault)
     #  Steps:
     #     1. when the main master is down, the backup master should take over
+    #     2. put and get should continue to function
     def test5(self):
-        self.webservice.start_all_services()
         print("Test 5 running.............")
+        self.webservice.start_all_services()
 
         # Precondition test
         client_service = client(self.webservice.proxy_port)
@@ -309,6 +325,51 @@ class demo:
         self.webservice.cleanup()
         os.remove(path)
 
+
+    # Test 6: minion k way replication fix
+    # Precondition:
+    # When admin decides to fix k way replication, system has to be in a steady state.
+    # A file has been uploaded
+    # Steps:
+    #  1. kill k - 1 minions
+    #  2. show report
+    #  3. run minion fix on master
+    #  4. show all minion show remain k replication
+    def test6(self):
+        print("Test 6 running.............")
+        self.webservice.start_all_services()
+
+        # Precondition
+        client_service = client(self.webservice.proxy_port)
+
+        path2 = './test2.txt'
+        text2 = "test2 data"
+        dest_name2 = 'test2'
+        generate_file(path2, text2)
+
+        path1 = './test1.txt'
+        text1 = "test1 data"
+        dest_name1 = 'test1'
+        generate_file(path1, text1)
+
+        # upload 2 files
+        client_service.put(path2, dest_name2)
+        client_service.put(path1, dest_name1)
+
+
+        # Randomly kill k - 1 nodes
+        self.webservice.kill_random_minions(replication_factor - 1)
+        self.webservice.minion_status_report()
+
+        # show minion replication report
+        self.webservice.file_status_report()
+
+        os.remove(path2)
+        os.remove(path1)
+
+        self.webservice.cleanup()
+
+
     def run_all_tests(self):
         self.test1()
         self.test2()
@@ -316,7 +377,7 @@ class demo:
         self.test4()
         self.test5()
 
-        # self.test6()
+        self.test6()
 
 
 ###############################

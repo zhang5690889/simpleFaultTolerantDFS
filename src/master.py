@@ -54,16 +54,40 @@ class MasterService(rpyc.Service):
                 minion = con.root.Minion()
                 minion.delete_key(key)
 
+
+        def exposed_get_file_status_report(self):
+
+            all_mapping = []
+            # broadcast to get key value
+            for minion_port in self.minion_ports:
+                try:
+                    con = rpyc.connect("127.0.0.1", port=minion_port)
+                    minion = con.root.Minion()
+                    # copy to a new place
+                    tmp = list(minion.get_all_keys())
+                    all_mapping.append([minion_port,tmp])
+                except Exception:
+                    continue
+
+            print (all_mapping)
+
+
+
+
         # This method shows how many minion down
-        def exposed_minion_report(self):
+        def exposed_minion_status_report(self):
             minion_state=self.get_minion_state()
 
             print("The following minions are dead:")
             print(minion_state[1])
             print("The following minions are alive:")
             print(minion_state[0])
+            if len(minion_state[1])< self.replication_factor+1:
+                print ("The system is in danger! Make sure you have more live nodes.")
 
         def exposed_get_minion_ports(self,minion_ports):
+            # minior bug. Dirty fix
+            self.minion_ports.clear()
             for minion_port in minion_ports:
                 self.minion_ports.append(minion_port)
             # print (self.minion_ports)
