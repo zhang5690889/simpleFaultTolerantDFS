@@ -37,7 +37,7 @@ class WebServices:
         self.minion_process_ref.append(p)
 
     def activate_proxy(self, proxy_port, minion_ports, master_ports):
-        p = Process(target=startProxyService, args=(proxy_port,master_ports,minion_ports,))
+        p = Process(target=startProxyService, args=(proxy_port, master_ports, minion_ports,))
         p.start()
         self.proxy_process_ref = p
 
@@ -45,7 +45,6 @@ class WebServices:
         p = Process(target=startMasterService, args=(master_port,))
         p.start()
         self.master_process_ref.append(p)
-
 
     def file_status_report(self):
         # connect to master
@@ -56,10 +55,8 @@ class WebServices:
         master = con.root.Master()
 
         result = list(master.get_file_status_report())
-        print ("File mapping status:")
-        print (result)
-
-
+        print("File mapping status:")
+        print(result)
 
     def start_all_services(self):
 
@@ -85,11 +82,10 @@ class WebServices:
         master_port = proxy.get_master()
         con = rpyc.connect("127.0.0.1", port=master_port)
         master = con.root.Master()
-        master_pid= master.get_master_PID()
+        master_pid = master.get_master_PID()
         os.kill(master_pid, signal.SIGTERM)
 
         time.sleep(2)
-
 
     def fix_k_way_replication(self):
         con = rpyc.connect('localhost', self.proxy_port)
@@ -98,7 +94,6 @@ class WebServices:
         con = rpyc.connect("127.0.0.1", port=master_port)
         master = con.root.Master()
         master.fix_k_way_replication()
-
 
     def cleanup(self):
         for minion_ref in self.minion_process_ref:
@@ -111,7 +106,6 @@ class WebServices:
         self.minion_process_ref = []
         self.master_process_ref = []
         self.proxy_process_ref = None
-
 
         time.sleep(3)
 
@@ -143,24 +137,22 @@ class demo:
         self.webservice = WebServices \
             (default_minion_ports, default_master_ports, default_proxy_port)
 
-
     # Race condition is possible.
     # If user makes a request too fast, the later request would get outdated value
-    def testNameSpaceOverwrite(self,expectedResult, namespace, client_service, counter,path):
+    def testNameSpaceOverwrite(self, expectedResult, namespace, client_service, counter, path):
 
         try:
             client_service.put(path, namespace)
             result2 = client_service.get(namespace)
             assert result2 == expectedResult, "Same namespace file not overridden."
         except AssertionError:
-            if counter>10:
+            if counter > 10:
                 raise
             else:
                 time.sleep(2)
-                print ('Request too fast. System has not been updated. Retrying!')
-                counter+=1
-                self.testNameSpaceOverwrite(expectedResult, namespace, client_service, counter,path)
-
+                print('Request too fast. System has not been updated. Retrying!')
+                counter += 1
+                self.testNameSpaceOverwrite(expectedResult, namespace, client_service, counter, path)
 
     # Test cases #
 
@@ -265,8 +257,7 @@ class demo:
 
         # Try to connect to a non existing minion
         status = client_service.send_to_minion \
-            ([7777], "abc" , 'abc')
-
+            ([7777], "abc", 'abc')
 
         assert status is False, "It is connecting to a none existing client"
 
@@ -291,7 +282,7 @@ class demo:
 
         client_service = client(self.webservice.proxy_port)
         generate_file(path1, text1)
-        client_service.put(path1,namespace1)
+        client_service.put(path1, namespace1)
         result1 = client_service.get(namespace1)
 
         assert result1 == text1, "Get or put not working after killing some minions"
@@ -329,7 +320,6 @@ class demo:
         self.webservice.cleanup()
         os.remove(path)
 
-
     # Test 6: minion k way replication fix
     # Precondition:
     # 1. When admin decides to fix k way replication, system has to be in a steady state.
@@ -361,19 +351,20 @@ class demo:
         client_service.put(path2, dest_name2)
         client_service.put(path1, dest_name1)
 
-
         # Randomly kill k - 1 nodes
         self.webservice.kill_random_minions(replication_factor - 1)
 
         # show minion status
         self.webservice.minion_status_report()
 
-        # show show report report
+        # show file report report
+        print("Before fixing.")
         self.webservice.file_status_report()
 
-        # show show report report
+        # k replication fix
         self.webservice.fix_k_way_replication()
 
+        print("After fixing.")
         # show show report report
         self.webservice.file_status_report()
 
@@ -381,7 +372,6 @@ class demo:
         os.remove(path1)
 
         self.webservice.cleanup()
-
 
     def run_all_tests(self):
         while 1:

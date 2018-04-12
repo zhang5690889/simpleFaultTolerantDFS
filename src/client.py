@@ -1,5 +1,3 @@
-import time
-
 import rpyc
 
 
@@ -8,7 +6,6 @@ class client:
     def __init__(self, proxy_port_num):
         self.con = rpyc.connect('localhost', proxy_port_num)
         self.proxy = self.con.root.Proxy()
-
 
     # Client public API : get, put, delete
     def get(self, key):
@@ -46,7 +43,7 @@ class client:
         # Upon any possible exception, retry
         except Exception:
             # if client cannot connect to master, just keep retrying
-            self.put(source,key)
+            self.put(source, key)
 
     def delete(self, key):
         # delete race condition
@@ -54,8 +51,6 @@ class client:
         con = rpyc.connect("127.0.0.1", port=master_port)
         master = con.root.Master()
         master.delete_key(key)
-
-
 
     # Internal APIs
 
@@ -74,6 +69,3 @@ class client:
                 self.delete(key)
                 return False
         return True
-
-
-

@@ -1,4 +1,3 @@
-import time
 import rpyc
 from rpyc.utils.server import ThreadedServer
 
@@ -43,7 +42,6 @@ class ProxyService(rpyc.Service):
 
 
 def set_conf(master_ports, minions_ports):
-
     # master should know everyone's port
     proxy = ProxyService.exposed_Proxy
     proxy.master_ports = master_ports
