@@ -8,9 +8,9 @@ class client:
 
     # Client public API : get, put, delete
     def get(self, key):
-        master_port = self.proxy.get_master()
         try:
-            con = rpyc.connect("127.0.0.1", port=master_port)
+            master_port = self.proxy.get_master()
+            con = self.connect_to_master(master_port)
             master = con.root.Master()
             minion_ports = master.get_minion_that_has_the_key(key)
 
@@ -23,14 +23,14 @@ class client:
             return ''
         # Upon any possible exception, retry
         except Exception:
-            # if client cannot connect to master, just keep retrying
+            print ("[Client] Encountered some problems. Retrying..")
             self.get(key)
 
     def put(self, source, key):
         # get allocation scheme from master through proxy
         try:
             master_port = self.proxy.get_master()
-            con = rpyc.connect("127.0.0.1", port=master_port)
+            con = self.connect_to_master(master_port)
             master = con.root.Master()
             minion_ports = master.get_allocation_scheme()
 
@@ -39,13 +39,13 @@ class client:
                 return self.send_to_minion(minion_ports, data, key)
         # Upon any possible exception, retry
         except Exception:
-            # if client cannot connect to master, just keep retrying
+            print("[Client] Encountered some problems. Retrying..")
             self.put(source, key)
 
     def delete(self, key):
-        # delete race condition
         master_port = self.proxy.get_master()
-        con = rpyc.connect("127.0.0.1", port=master_port)
+        # Master exception handled
+        con = self.connect_to_master(master_port)
         master = con.root.Master()
         master.delete_key(key)
 
@@ -65,3 +65,13 @@ class client:
                 self.delete(key)
                 return False
         return True
+
+
+    # try master connection
+    def connect_to_master(self, master_port):
+        try:
+             return rpyc.connect("127.0.0.1", port=master_port)
+        except Exception:
+            print ("[Client] Cannot connect to master. Retrying...")
+            master_port = self.proxy.get_master()
+            return self.connect_to_master(master_port)

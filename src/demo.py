@@ -369,6 +369,29 @@ class demo:
         removefiles([path1, path2])
         self.webservice.cleanup()
 
+    # Test 7: client to master fail (race condition handling)
+    # (warn client something wrong. Tell user to retry)
+    #  Steps:
+    #     1. Client asks proxy for a live master
+    #     2. Proxy sends a live master's port back
+    #     3. Master goes offline
+    #     4. Client cannot connect to master
+    #     5. Client retry by calling to proxy again
+    def test7(self):
+
+        print("Test 7 running.............")
+        self.webservice.start_all_services()
+        client_service = client(self.webservice.proxy_port)
+
+        # Try to connect to a non existing master. System will retry
+        client_service.connect_to_master(7777)
+
+        print("[Test 7 passed] client to master race handling working!")
+
+        self.webservice.cleanup()
+
+
+
     def run_all_tests(self):
         while 1:
             self.test1()
@@ -377,6 +400,7 @@ class demo:
             self.test4()
             self.test5()
             self.test6()
+            self.test7()
 
 if __name__ == "__main__":
     demo_obj = None
