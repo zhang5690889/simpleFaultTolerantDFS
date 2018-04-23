@@ -5,9 +5,6 @@ import shutil
 import rpyc
 from rpyc.utils.server import ThreadedServer
 
-DATA_DIR = "/tmp/minion/"
-
-
 class MinionService(rpyc.Service):
     class exposed_Minion(object):
         minionport = 0

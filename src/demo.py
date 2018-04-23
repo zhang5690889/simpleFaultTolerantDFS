@@ -393,14 +393,13 @@ class demo:
 
 
     def run_all_tests(self):
-        while 1:
-            self.test1()
-            self.test2()
-            self.test3()
-            self.test4()
-            self.test5()
-            self.test6()
-            self.test7()
+        self.test1()
+        self.test2()
+        self.test3()
+        self.test4()
+        self.test5()
+        self.test6()
+        self.test7()
 
 if __name__ == "__main__":
     demo_obj = None
