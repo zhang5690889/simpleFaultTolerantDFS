@@ -1,8 +1,14 @@
-Simple Fault Tolerant Distributed File System
+##Simple Fault Tolerant Distributed File System 
 
 The readme contains two parts: DFS design and fault handling
 
-DFS Design:
+##Requirements and how to run:
+* python 3.6
+* rpyc
+
+Simply run demo.py to see all usages
+
+##DFS Design:
 
 Domain Entities and their responsibilities:
 
@@ -12,7 +18,7 @@ Proxy: The central map to every component. It is responsible for determining whi
 
 Minion: Lowest level of the system responsible for saving and retrieving data.
 
-Master: Manager of minions. It determines allocation scheme and operations on top of minions, such as checking minion
+Master: Manager of minions. It determines allocation scheme and APIs on top of minions, such as checking minion
         cluster status, and file replication status
 
 Replication scheme:
@@ -20,7 +26,8 @@ Replication scheme:
 K-way replication. Each file has k number of copies
 
 
-Fault Handling and Solution
+##Fault Handling and Solution
+All tests reside in demo.py
 
 Basic DFS functionality test [test1]
 
