@@ -1,4 +1,4 @@
-# Make sure you kill k - 1 nodes. there are still at least k nodes live. otherwise it will below up
+# Make sure you kill k - 1 nodes. there are still at least k nodes live. otherwise it will blow up
 
 # Master server configuration
 replication_factor = 3
